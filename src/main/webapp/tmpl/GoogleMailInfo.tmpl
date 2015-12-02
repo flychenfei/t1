@@ -1,7 +1,7 @@
 <script id="tmpl-GoogleMailInfo" type="text/html">
 	<div class="MailInfo modal">
 		<div class="MailInfo-header modal-header">
-			<div class="close btnClose"><i class="icon-remove"></i></div>
+			<div class="close btnClose"><i class="glyphicon glyphicon-remove"></i></div>
 			<h3>{{subject}}</h3>
 		</div>
 		<div class="MailInfo-content modal-body">
@@ -18,10 +18,24 @@
 						{{from}}
 					</div>
 				</div>
-				<div class="control-group">
+                <div class="control-group">
 					<div class="control-label">Date:</div>
 					<div class="controls">
 						{{sendDate}}
+					</div>
+				</div>
+				<div class="control-group {{#if hideCC}}hide{{/if}}">
+					<div class="control-label">CC:</div>
+					<div class="controls">
+					    {{cc}}
+					</div>
+				</div>
+				<div class="control-group {{#if hideAttachments}}hide{{/if}}">
+					<div class="control-label">Attachment:</div>
+					<div class="controls">
+						{{#each attachments}}
+							<div><a href="javascript:void(0)" data-attachment-id="{{id}}"data-attachment-name="{{name}}"  class="attachment">{{name}}</a></div>
+						{{/each}}
 					</div>
 				</div>
 				<div class="control-group">
@@ -33,7 +47,7 @@
 			</div>
 		</div>
 		<div class="MailInfo-footer modal-footer">
-			<div class="btn btnClose">Close</div>
+			<div class="btn btn-default btnClose">Close</div>
 		</div>
 	</div>  
 </script>

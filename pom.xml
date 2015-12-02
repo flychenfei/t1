@@ -14,38 +14,68 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.3.2</version>
+        <version>3.2</version>
         <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
+          <source>1.8</source>
+          <target>1.8</target>
           <encoding>utf8</encoding>
         </configuration>
       </plugin>
 
-      <!-- Copy war files to ../war -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <executions>
+          <!-- gulp default to process tmpl & less files -->
+          <execution>
+            <id>node-gulp-default</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>gulp</executable>
+              <arguments>
+                <argument>default</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <!-- /gulp default to process tmpl & less files -->
+        </executions>
+      </plugin>
+
       <plugin>
         <artifactId>maven-antrun-plugin</artifactId>
         <version>1.4</version>
         <executions>
+
+          <!-- Copy to War -->
           <execution>
-            <id>compile-less-tmpl</id>
-            <phase>compile</phase>
-            <configuration>
-              <tasks>
-                <exec executable="java">
-                  <arg line="-jar"/>
-                  <arg line="/apps/jcruncherEx.jar"/>
-                </exec>
-              </tasks>
-            </configuration>
+            <id>copy-to-war</id>
+            <phase>package</phase>
             <goals>
               <goal>run</goal>
             </goals>
+            <configuration>
+              <tasks>
+                <mkdir dir="../war" />
+                <delete includeemptydirs="true">
+                  <fileset dir="../war" includes="**/*" excludes=".git/"/>
+                </delete>
+                <copy todir="../war">
+                  <fileset dir="target/samplesocial"/>
+                </copy>
+              </tasks>
+            </configuration>
           </execution>
+          <!-- /Copy to War -->
+
         </executions>
       </plugin>
+
+
       <plugin>
-        <groupId>org.mortbay.jetty</groupId>
+        <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
         <configuration>
           <webApp>
@@ -61,13 +91,13 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.12-SNAPSHOT</version>
+      <version>4.12</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
-      <artifactId>servlet-api</artifactId>
-      <version>2.5</version>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>3.1.0</version>
       <scope>provided</scope>
     </dependency>
     <!-- /Provided Dependencies -->
@@ -76,47 +106,78 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
     <dependency>
       <groupId>com.britesnow</groupId>
       <artifactId>snow</artifactId>
-      <version>2.0.3-SNAPSHOT</version>
+      <version>2.0.7-SNAPSHOT</version>
     </dependency>
     <!-- /Snow -->
 
     <!-- Google apis -->
-    <dependency>
-      <groupId>com.google.gdata</groupId>
-      <artifactId>core</artifactId>
-      <version>1.47.1</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>google-collections</artifactId>
-          <groupId>com.google.collections</groupId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <!-- For gmail -->
-    <dependency>
-      <groupId>com.sun.mail</groupId>
-      <artifactId>javax.mail</artifactId>
-      <version>1.5.0</version>
-    </dependency>
-    <dependency>
-        <groupId>javax.mail</groupId>
-        <artifactId>mail</artifactId>
-        <version>1.4.7</version>
-    </dependency>
-    <dependency>
-        <groupId>com.sun.mail</groupId>
-        <artifactId>gimap</artifactId>
-        <version>1.5.0</version>
-    </dependency>
-    <!-- /For gmail -->
-    
     <!-- Google apis -->
+    <dependency>
+		<groupId>com.google.gdata</groupId>
+		<artifactId>core</artifactId>
+		<version>1.47.1</version>
+		<exclusions>
+			<exclusion>
+				<artifactId>google-collections</artifactId>
+				<groupId>com.google.collections</groupId>
+			</exclusion>
+			<exclusion>
+				<groupId>javax.mail</groupId>
+				<artifactId>mail</artifactId>
+			</exclusion>
+		</exclusions>
+	</dependency>
+    
+    <!-- Google Oauth2 -->
+    <dependency>
+	    <groupId>com.google.api-client</groupId>
+	    <artifactId>google-api-client-jackson2</artifactId>
+	    <version>1.18.0-rc</version>
+	</dependency>
+    <!-- /Google Oauth2 -->
+    
+    <!-- Gmail IMAP -->
+    <!-- Note: can not updated to 1.5.2, otherwise mail can not be sent -->
+    <dependency>
+		<groupId>com.sun.mail</groupId>
+		<artifactId>gimap</artifactId>
+		<version>1.4.7</version>
+	</dependency>
+    <!-- /Gmail IMAP -->
+    
+    <!-- Gmail REST API -->
+    <dependency>
+		<groupId>com.google.apis</groupId>
+		<artifactId>google-api-services-gmail</artifactId>
+		<version>v1-rev15-1.19.0</version>
+	</dependency>
+    <!-- /Gmail REST API -->
+    
+    
+    <!-- Google Canleader -->
+    <dependency>
+      <groupId>com.google.apis</groupId>
+      <artifactId>google-api-services-calendar</artifactId>
+      <version>v3-rev84-1.18.0-rc</version>
+    </dependency>
+    
+    <!-- /Google Canleader -->
+    
+    <!-- Google Drive -->
+	<dependency>
+		<groupId>com.google.apis</groupId>
+		<artifactId>google-api-services-drive</artifactId>
+		<version>v2-rev151-1.19.0</version>
+	</dependency>
+    <!-- /Google Drive -->
+    
+    <!-- /Google apis -->
     
     <!--Facebook api-->
     <dependency>
       <groupId>com.restfb</groupId>
       <artifactId>restfb</artifactId>
-      <version>1.6.12</version>
+      <version>1.6.14</version>
     </dependency>
     <!--/Facebook api-->
     
@@ -173,12 +234,32 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
     </dependency>
     <!--/salesforce api -->
     
+    <!-- Database Dependencies -->
+	<dependency>
+		<groupId>org.j8ql</groupId>
+		<artifactId>j8ql</artifactId>
+		<version>0.5.5-SNAPSHOT</version>
+	</dependency>  
+	
+	<dependency>
+		<groupId>com.zaxxer</groupId>
+		<artifactId>HikariCP</artifactId>
+		<version>2.0.1</version>
+	</dependency>		
+
+	<dependency>
+		<groupId>org.postgresql</groupId>
+		<artifactId>postgresql</artifactId>
+		<version>9.3-1101-jdbc41</version>
+	</dependency>
+	<!-- /Database Dependencies -->
+		
     <!-- Logging -->
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-      <version>1.7.5</version>
-    </dependency>
+		<groupId>org.slf4j</groupId>
+		<artifactId>slf4j-log4j12</artifactId>
+		<version>1.7.7</version>
+	</dependency>
     <!-- /Logging -->
 
     <!-- Generic Type Workaround -->
@@ -193,11 +274,12 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
 
     <!-- javasimon -->
     <dependency>
-      <groupId>org.javasimon</groupId>
-      <artifactId>javasimon-core</artifactId>
-      <version>3.4.0</version>
-    </dependency>
+		<groupId>org.javasimon</groupId>
+		<artifactId>javasimon-core</artifactId>
+		<version>3.5.1</version>
+	</dependency>
     <!-- /javasimon -->
+    
     <!-- metapossum -->
     <dependency>
       <groupId>com.metapossum</groupId>
@@ -207,19 +289,36 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
     <!-- /metapossum -->
 
   </dependencies>
+  
   <repositories>
-    <repository>
-      <id>Sonatype Snapshot</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    </repository>
+  	<!-- For snow snapshots -->
+	<repository>
+		<id>Sonatype Snapshot</id>
+		<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+	</repository>
+	<!-- /For snow snapshots -->
+	
+	<!-- for j8ql -->
+	<repository>
+		<id>BriteSnow Releases</id>
+		<url>http://nexus.britesnow.com/nexus/content/repositories/releases/</url>
+	</repository>
+	<repository>
+		<id>BriteSnow Snapshots</id>
+		<url>http://nexus.britesnow.com/nexus/content/repositories/snapshots/</url>
+	</repository>   
+	<!-- /for j8ql -->
+
     <repository>
       <id>maven repository</id>
       <url>https://repository.sonatype.org/content/groups/public</url>
     </repository>
+    
     <repository>
       <id>mandubian-mvn</id>
       <url>http://mandubian-mvn.googlecode.com/svn/trunk/mandubian-mvn/repository</url>
     </repository>
+    
     <repository>
       <id>foursquareapijava</id>
       <name>Foursquare V2 API for Java Repository</name>

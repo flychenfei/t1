@@ -22,6 +22,11 @@
 					}).pipe(function(json){
 					if(json.success){
 						alert("adding "+json.result.name+" successfully.");
+						$(".tab-content").html("<div class=\"alert alert-info\">Tring to load data,Please wait...</div>");
+						app.githubApi.getRepositories().pipe(function(repositories){
+							repositories = repositories.result;
+							brite.display("GithubRepositories",$(".tab-content"),{repositories:repositories});
+						});
 					}else{
 						alert(json.errorMessage);
 					}
@@ -31,7 +36,7 @@
 					$(description).val("");
 				});
 			},
-			"click;.icon-edit":function(event){
+			"click;.edit-name":function(event){
 				var repositoryId = $(event.target).closest("td").attr("data-repository-id");
 				var name = $(event.target).closest("td").attr("data-repository-name");
 				var description = $(event.target).closest("td").attr("data-repository-description");
@@ -55,13 +60,11 @@
 					name:name,
 					login:login
 				}).pipe(function(json){
-					alert(json.result.length);
 					brite.display("GithubCommits",$(".tab-content"),{commits:json.result,name:name,login:login});
 				});
 			},
 			"click;.events":function(event){
 				app.githubApi.getPublicEvents().pipe(function(json){
-					console.log(json);
 				});
 			},
 			"click;.reponame":function(event){
@@ -105,6 +108,27 @@
 						return false;
 					}
 					brite.display("GithubRepositories",$(".tab-content"),{repositories:forks});
+				});
+			},
+			"click;.issues":function(event){
+				var name = $(event.target).closest("td").attr("data-repository-name");
+				var login = $(event.target).closest("td").attr("data-login");
+				app.githubApi.getIssues({
+					name:name,
+					login:login,
+					state:"open"
+				}).pipe(function(json){
+					brite.display("GithubIssues",$(".tab-content"),{issues:json.result.issues,name:name,login:login,issueState:"open",openCount: json.result.openCount,closedCount:json.result.closedCount});
+				});
+			},
+			"click;.releases":function(event){
+				var name = $(event.target).closest("td").attr("data-repository-name");
+				var login = $(event.target).closest("td").attr("data-login");
+				app.githubApi.getReleases({
+					name:name,
+					login:login
+				}).pipe(function(json){
+					brite.display("GithubReleases",$(".tab-content"),{releases:json.result.releases,name:name,login:login});
 				});
 			}
 		}

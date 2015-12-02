@@ -1,0 +1,52 @@
+<script id="tmpl-GithubIssues" type="text/html">
+	<div class="repository-name">
+		<span class="repository">{{login}} <span class="separator">/</span> {{name}}</span>
+		<div class="btn new-issue" data-name="{{name}}" data-login="{{login}}">New issue</div>
+	</div>
+	<div class="option" data-name="{{name}}" data-login="{{login}}">
+		{{#equal issueState "open"}}
+  		<span class="openIssues choosed">
+  			<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+			<span class="">{{openCount}} Open</span>
+		</span>
+		<span class="closedIssues unchoosed">
+			<span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+			<span class="unchoosed">{{closedCount}} Closed</span>
+		</span>
+		{{else}}
+		<span class="openIssues unchoosed">
+			<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+			<span class="">{{openCount}} Open</span>
+		</span>
+		<span class="closedIssues choosed">
+			<span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+        	<span class="">{{closedCount}} Closed</span>
+        </span>
+		{{/equal}}
+	</div>
+	<div class="container githubIssues">
+		<table class="table" data-name="{{name}}" data-login="{{login}}">
+			<tbody>
+			{{#each issues}}
+			<tr>
+				<td class="message" data-issue-id="{{number}}">
+					<div><span class="messageTitle">{{title}}</span></div>
+				</td>
+				<td class="sha">
+					<div><span class="messageTitle">{{user.login}} assigned</span></div>
+				</td>
+				{{#equal state "open"}}
+				<td class="sha">
+                	<div><span class="btn btn-close">Close{{issueState}}</span></div>
+                </td>
+                {{else}}
+                <td class="sha">
+					<div><span class="btn btn-open">Open</span></div>
+				</td>
+				{{/equal}}
+			</tr>
+			{{/each}}
+			</tbody>
+		</table>
+	</div>
+</script>

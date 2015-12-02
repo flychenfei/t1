@@ -11,16 +11,21 @@
             showFolders.call(view);
         },
 
-        events: {
+		events: {
+        	"click;.btnAdd":function(e){
+	        	brite.display("CreateFolder",null,{id:null});
+	        },
+	        "click;.folderClass":function(e){
+	            var folderName =  $(e.currentTarget).closest("tr").attr("data-obj_id")
+	            brite.display("GoogleMails",".GoogleScreen-content",{folderName:folderName});
+	        }
         },
-
         docEvents: {
             "EDIT_FOLDER":function(event, extraData){
                 if (extraData && extraData.objId) {
-                    var folderName = getGroupId(extraData.objId);
                     var $row = $(extraData.event.currentTarget).closest("tr");
                     var fullName = $row.attr("data-fullName");
-                    brite.display("CreateFolder", null, {folerName:folderName, fullName:fullName})
+                    brite.display("CreateFolder", null, {id:fullName, name:fullName})
                 }
             },
             "DELETE_FOLDER": function(event, extraData){
@@ -34,6 +39,10 @@
                         }
                     });
                 }
+            },
+            "DO_REFRESH_FOLDERS":function(){
+            	var view = this;
+            	showFolders.call(view);
             }
         },
 
@@ -48,19 +57,21 @@
             columnDef:[
                 {
                     text:"#",
-                    render: function(obj, idx){return idx + 1},
-                    attrs:"style='width: 10%'"
+                    attrs:"style='width: 10%;  cursor:pointer;'",
+                    render: function(obj, idx){return idx + 1}
                 },
                 {
                     text:"Name",
-                    render:function(obj){return obj.fullName}
-
+                    render:function(obj){
+                            return "<a src=\"#\" class=\"folderClass\"><span>{0}</span></a>".format(obj.fullName);
+                            }
                 }
             ],
             opts:{
                 htmlIfEmpty: "Not Folder found",
                 withPaging: false,
-                cmdDelete: "DELETE_FOLDER"
+                cmdDelete: "DELETE_FOLDER",
+                cmdEdit: "EDIT_FOLDER"
             }
         });
     }

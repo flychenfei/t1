@@ -1,0 +1,48 @@
+<script id="tmpl-GoogleMailForwardRest" type="text/html">
+    <div class="GoogleMailForwardRest modal">
+        <div class="GoogleMailForwardRest-header modal-header">
+            <div class="close btnClose"><i class="glyphicon glyphicon-remove"></i></div>
+            <h3>{{#if subject }} Forward Mail [{{subject}}] {{else}} New Mail {{/if}}</h3>
+        </div>
+        <div class="GoogleMailForwardRest-content modal-body">
+            <div class="form-horizontal">
+                <div class="control-group">
+                    <div class="control-label">Subject:</div>
+                    <div class="controls">
+                        <input type='text' name="subject" {{#if subject }} value="Fwd: {{subject}}" {{/if}} />
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="control-label">To:</div>
+                    <div class="controls">
+                        <input type='text' name="to" value="" />
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="control-label">CC:</div>
+                    <div class="controls">
+                        <div class="cc"></div>
+                        <div><a href="javascript:void(0)" class="addCC">Add CC</a></div>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="control-label"></div>
+                    <div class="controls">
+                        <div class="attachments"></div>
+                        <div><a href="javascript:void(0)" class="addAttachment">Add Attachment</a></div>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="control-label">Content:</div>
+                    <div class="controls">
+                        <textarea name="content">{{content}}</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="GoogleMailForwardRest-footer modal-footer">
+            <div class="btn btn-primary btnCreate">Send</div>
+            <div class="btn btn-default btnClose">Close</div>
+        </div>
+    </div>
+</script>

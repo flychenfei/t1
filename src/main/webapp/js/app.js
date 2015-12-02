@@ -1,5 +1,10 @@
 var app = app || {};
 
+// when using pre-compiling or other templating engine are needed.
+Handlebars.templates = Handlebars.templates || {};
+// make all templates partials (no reasons why they should not)
+Handlebars.partials =  Handlebars.templates;
+
 (function(w) {
 
 	w.render = function(templateName, data) {
@@ -55,12 +60,12 @@ var app = app || {};
 			} else if (data && data.OAUTH_FAILED) {
 				//oauth fail
 				var count = failcount || 0;
-				if (count < 3) {
+				if (count < 1) {
 					var callback = function() {
 						count++;
 						app.getJsonData(url, params, count, dfd);
 					};
-					window.showModalDialog(data.oauthUrl);
+					window.open(data.oauthUrl, "newwindow", "width:400px;height:300px");
 					callback();
 				}
 				return;

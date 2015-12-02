@@ -1,25 +1,33 @@
 package com.britesnow.samplesocial.service;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.britesnow.samplesocial.entity.GithubRelease;
+import com.britesnow.snow.util.MapUtil;
 import org.apache.commons.fileupload.FileItem;
 import org.eclipse.egit.github.core.Download;
+import org.eclipse.egit.github.core.Issue;
 import org.eclipse.egit.github.core.DownloadResource;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.SearchRepository;
 import org.eclipse.egit.github.core.service.DownloadService;
+import org.eclipse.egit.github.core.service.IssueService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.util.EncodingUtils;
 import org.scribe.model.OAuthRequest;
 import org.scribe.model.Response;
 import org.scribe.model.Verb;
 
-import com.britesnow.samplesocial.model.User;
+import com.britesnow.samplesocial.entity.User;
 import com.britesnow.snow.util.JsonUtil;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
+import javax.xml.crypto.Data;
 
 @Singleton
 public class GithubRepositoriesService {
@@ -99,8 +107,8 @@ public class GithubRepositoriesService {
 		if(path.startsWith("/"))
 			path = "/"+path;
 		OAuthRequest request = githubAuthService.createRequest(Verb.GET,
-				PREFIX+"/repos/"+githubUserService.getGithubUser(user).getLogin()+"/"+repo+
-				"/contents"+path+"?access_token="+githubAuthService.getToken(user).getToken());
+				PREFIX + "/repos/" + githubUserService.getGithubUser(user).getLogin() + "/" + repo +
+						"/contents" + path + "?access_token=" + githubAuthService.getToken(user).getToken());
 		Response response = request.send();
 		String result = response.getBody();
 		if(result.startsWith("["))
@@ -201,5 +209,73 @@ public class GithubRepositoriesService {
 	public List<SearchRepository> searchRepositories(User user,String query,int startPage) throws IOException{
 		RepositoryService repositoryService = new RepositoryService(githubAuthService.createClient(user));
 		return repositoryService.searchRepositories(query, startPage);
+	}
+
+	/*
+	 * Search Issues
+	 * @param repo
+	 * @param user
+	 * @return
+	 * @throws IOException
+	 */
+
+	public Map getIssues(Repository repo,User user,String state) throws IOException{
+		IssueService issueService = new IssueService(githubAuthService.createClient(user));
+		Map<String,String> filterData = new HashMap<String,String>();
+		filterData.put("state","all");
+		Map map = new HashMap<>();
+		List<Issue> issues = issueService.getIssues(repo,filterData);
+		List openIssues = new ArrayList<Issue>();
+		List closedIssues = new ArrayList<Issue>();
+		for (Issue issue : issues){
+			if(issue.getState().equals("open")){
+				openIssues.add(issue);
+			}else {
+				closedIssues.add(issue);
+			}
+		}
+		if(state.equals("open")){
+			issues = openIssues;
+		}else if(state.equals("closed")){
+			issues = closedIssues;
+		}
+		map.put("issues",issues);
+		map.put("openCount",openIssues.size());
+		map.put("closedCount",closedIssues.size());
+		return map;
+	}
+
+	/*
+	 * Search Issue
+	 * @param repo
+	 * @param user
+	 * @return
+	 * @throws IOException
+	 */
+
+	public Map<?, ?> getIssue(Repository repo, User user, String issueNumber) throws IOException{
+		IssueService issueService = new IssueService(githubAuthService.createClient(user));
+		return MapUtil.mapIt("issue", issueService.getIssue(repo, issueNumber), "comment", issueService.getComments(repo, issueNumber));
+	}
+
+	/*
+	 * new Issue
+	 * @param repo
+	 * @param user
+	 * @return
+	 * @throws IOException
+	 */
+	public Issue newIssue(Repository repo, User user, Issue issue) throws IOException {
+		IssueService issueService = new IssueService(githubAuthService.createClient(user));
+		return issueService.createIssue(repo, issue);
+	}
+
+	public Map getReleases(Repository repo,User user) throws IOException{
+		GithubReleaseService releaseService = new GithubReleaseService(githubAuthService.createClient(user));
+		Map map = new HashMap<>();
+		List<GithubRelease> releases = releaseService.getReleases(repo);
+
+		map.put("releases",releases);
+		return map;
 	}
 }

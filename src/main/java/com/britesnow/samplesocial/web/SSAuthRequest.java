@@ -2,8 +2,9 @@ package com.britesnow.samplesocial.web;
 
 import java.util.Map;
 
+import com.britesnow.samplesocial.dao.UserDao;
+import com.britesnow.samplesocial.entity.User;
 import com.britesnow.samplesocial.manager.OAuthManager;
-import com.britesnow.samplesocial.model.User;
 import com.britesnow.snow.web.RequestContext;
 import com.britesnow.snow.web.auth.AuthRequest;
 import com.britesnow.snow.web.auth.AuthToken;
@@ -12,6 +13,7 @@ import com.britesnow.snow.web.handler.annotation.WebModelHandler;
 import com.britesnow.snow.web.param.annotation.WebModel;
 import com.britesnow.snow.web.param.annotation.WebParam;
 import com.britesnow.snow.web.param.annotation.WebUser;
+import com.google.common.base.Charsets;
 import com.google.common.base.Objects;
 import com.google.common.hash.Hashing;
 import com.google.inject.Inject;
@@ -22,6 +24,9 @@ public class SSAuthRequest implements AuthRequest<Object> {
     
     @Inject
     private OAuthManager oAuthManager;
+    
+    @Inject
+	private UserDao userDao;
     
     @SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
@@ -48,8 +53,7 @@ public class SSAuthRequest implements AuthRequest<Object> {
 
             // Build the expectedUserToken from the user info
             // For this example, simplistic userToken (sha1(username,password))
-            @SuppressWarnings("deprecation")
-			String expectedUserToken = Hashing.sha1().hashString(user.getUsername()).toString();
+			String expectedUserToken = sha1(user.getUsername());
             if (Objects.equal(expectedUserToken, userToken)) {
                 // if valid, then, we create the AuthTocken with our User object
                 AuthToken<User> authToken = new AuthToken<User>();
@@ -92,9 +96,10 @@ public class SSAuthRequest implements AuthRequest<Object> {
     @WebActionHandler
     public Object login(@WebParam("username") String username,
                             @WebParam("password") String password, RequestContext rc) {
-    	User user = new User();
-    	user.setUsername(username);
-        user.setPassword(password);
+    	User user = userDao.getByUsername(username).orElse(null);
+    	if(user == null){
+    		user = userDao.createUser(username, password);
+    	}
         setUserToSession(rc, user);
     	oAuthManager.setUserInfo("webuser", user);
     	return user;
@@ -105,10 +110,13 @@ public class SSAuthRequest implements AuthRequest<Object> {
     private void setUserToSession(RequestContext rc, User user) {
         // TODO: need to implement session less login (to easy loadbalancing)
         if (user != null) {
-        	@SuppressWarnings("deprecation")
-            String userToken = Hashing.sha1().hashString(user.getUsername()).toString();
+            String userToken = sha1(user.getUsername());
             rc.setCookie("userToken", userToken);
-            //
+            rc.setCookie("userID", user.getId());
         }
+    }
+    
+    static String sha1(String txt){
+        return Hashing.sha1().hashString(txt, Charsets.UTF_8).toString();
     }
 }

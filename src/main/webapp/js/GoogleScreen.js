@@ -14,7 +14,6 @@
             postDisplay:function (data, config) {
                 var view = this;
                 var $e = view.$el;
-                brite.display("GoogleSearchMails");
                 brite.display("GoogleMails");
             },
             events:{
@@ -28,22 +27,40 @@
                 var menu = $li.attr("data-nav");
                 if(menu == "contacts"){
                   brite.display("GoogleContacts");
-                }else if(menu == "mails"){
-                  brite.display("GoogleMails");
                 }else if(menu == "groups"){
                   brite.display("GoogleGroups");
+                }else if(menu == "calendar-events"){
+                  brite.display("GoogleCalendarEvents");
+                }else if(menu == "calendars"){
+                  brite.display("GoogleCalendars");
+                }else if(menu == "mails"){
+                  brite.display("GoogleMails");
+                }else if(menu == "mails_rest"){
+                  brite.display("GoogleMailsRest");
                 }else if(menu == "folders"){
                   brite.display("GoogleFolders");
+                }else if(menu == "folders_rest"){
+                  brite.display("GoogleFoldersRest");
+                }else if(menu == "gmail_analytics"){
+                  brite.display("GoogleGmailAnalytics");
                 }else if(menu == "actions"){
                     var list = [
                         {name:"sendMail",label:"Send Mail"},
+                        {name:"sendMailRest",label:"Send Mail Via Rest"},
                         {name:"createGroup",label:"Create Group"},
                         {name:"createContact",label:"Create Contact"},
                         {name:"searchEmail",label:"Search Email"},
                         {name:"searchContact",label:"Search Contact"}
                     ];
                     brite.display("Dropdown",null,{$target:$li,list:list});
-                    $li.find("i").removeClass("icon-chevron-down").addClass("icon-chevron-up");
+                    $li.find("i").removeClass("glyphicon glyphicon-chevron-down").addClass("glyphicon glyphicon-chevron-up");
+                }else if(menu == "drive"){
+                	var list = [
+                                {name:"file",label:"Files"},
+                                {name:"trash",label:"Trash"}
+                            ];
+                    brite.display("Dropdown",null,{$target:$li,list:list});
+                    $li.find("i").removeClass("glyphicon glyphicon-chevron-down").addClass("glyphicon glyphicon-chevron-up");
                 }
               }
             },
@@ -53,12 +70,17 @@
                     var view = this;
                     var $e = view.$el;
                     var $li = $e.find("li[data-nav='actions']");
-                    $li.find("i").removeClass("icon-chevron-up").addClass("icon-chevron-down");
+                    var $Li = $e.find("li[data-nav='drive']");
+                    $li.find("i").removeClass("glyphicon glyphicon-chevron-up").addClass("glyphicon glyphicon-chevron-down");
+                    $Li.find("i").removeClass("glyphicon glyphicon-chevron-up").addClass("glyphicon glyphicon-chevron-down");
                 },
                 "DO_ON_DROP_DOWN_CLICK":function(event, name) {
                     switch (name) {
                         case "sendMail":
                             brite.display("GoogleMailSend");
+                            break;
+                        case "sendMailRest":
+                            brite.display("GoogleMailSend",null,{type:'rest'});
                             break;
                         case "createGroup":
                             brite.display("CreateGroup");
@@ -104,6 +126,10 @@
                                     });
                                 }});
                             break;
+                        case "file":brite.display("GoogleDriveFiles");
+                        	break;
+                        case "trash":brite.display("GoogleDriveTrash");
+                        	break;
                         default:
                     }
                 }

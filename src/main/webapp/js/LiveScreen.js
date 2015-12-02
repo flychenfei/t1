@@ -28,6 +28,14 @@
                 var menu = $li.attr("data-nav");
                 if(menu == "userInfo"){
                   brite.display("LiveUserInfo");
+                }else if(menu == "contacts"){
+                  brite.display("LiveContacts");
+                }else if(menu == "albums"){
+                  brite.display("LiveAlbums");
+                }else if(menu == "drive"){
+                  brite.display("LiveDrive");
+                }else if(menu == "calendar"){
+                  brite.display("LiveCalendar");
                 }
               }
             },

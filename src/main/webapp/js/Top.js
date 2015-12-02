@@ -42,21 +42,28 @@
                         brite.display("LiveScreen");
             		}else if(menu == "dropbox"){
                         brite.display("DropboxScreen");
-            		}else if(menu == "oauth"){
-            		  var list = [
-            		    {name:"linkedin",label:"Connect to LinkedIn"},
-            		    {name:"google",label:"Connect to Google"},
-            		    {name:"salesforce",label:"Connect to SalesForce"},
-            		    {name:"github",label:"Connect to Github"},
-            		    {name:"dropbox",label:"Connect to Dropbox"},
-            		    {name:"twitter",label:"Connect to Twitter"},
-            		    {name:"facebook",label:"Connect to Facebook"},
-            		    {name:"foursquare",label:"Connect to FourSquare"},
-            		    {name:"live",label:"Connect to Live"},
-            		    {name:"yahoo",label:"Connect to Yahoo"}
-            		  ];
-            		  brite.display("Dropdown",null,{$target:$li,list:list});
-            		  $li.find("i").removeClass("icon-chevron-down").addClass("icon-chevron-up");
+            		}else if(menu == "office365"){
+                        brite.display("Office365Screen");
+                    }else if(menu == "oauth"){
+                  if($li.find("i").hasClass('glyphicon-chevron-down')){
+                    var list = [
+                      {name:"linkedin",label:"Connect to LinkedIn"},
+                      {name:"google",label:"Connect to Google"},
+                      {name:"salesforce",label:"Connect to SalesForce"},
+                      {name:"github",label:"Connect to Github"},
+                      {name:"dropbox",label:"Connect to Dropbox"},
+                      {name:"twitter",label:"Connect to Twitter"},
+                      {name:"facebook",label:"Connect to Facebook"},
+                      {name:"foursquare",label:"Connect to FourSquare"},
+                      {name:"live",label:"Connect to Live"},
+                      {name:"yahoo",label:"Connect to Yahoo"}
+                    ];
+                    brite.display("Dropdown",null,{$target:$li,list:list});
+                    $li.find("i").removeClass("glyphicon glyphicon-chevron-down").addClass("glyphicon glyphicon-chevron-up");
+                  }else{
+                    $e.closest('body').find(".Dropdown").remove();
+                    $li.find("i").removeClass("glyphicon glyphicon-chevron-up").addClass("glyphicon glyphicon-chevron-down");
+                  }
             		}
 
             	}
@@ -67,7 +74,7 @@
                 var view = this;
                 var $e = view.$el;
                 var $li = $e.find("li[data-nav='oauth']");
-            		$li.find("i").removeClass("icon-chevron-up").addClass("icon-chevron-down");
+            		$li.find("i").removeClass("glyphicon glyphicon-chevron-up").addClass("glyphicon glyphicon-chevron-down");
               },
               "DO_ON_DROP_DOWN_CLICK":function(event, name) {
                   switch (name) {

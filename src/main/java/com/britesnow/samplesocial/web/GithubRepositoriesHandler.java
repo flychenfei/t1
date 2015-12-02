@@ -3,9 +3,10 @@ package com.britesnow.samplesocial.web;
 import java.io.IOException;
 
 import org.apache.commons.fileupload.FileItem;
+import org.eclipse.egit.github.core.Issue;
 import org.eclipse.egit.github.core.Repository;
 
-import com.britesnow.samplesocial.model.User;
+import com.britesnow.samplesocial.entity.User;
 import com.britesnow.samplesocial.service.GithubCommitService;
 import com.britesnow.samplesocial.service.GithubRepositoriesService;
 import com.britesnow.samplesocial.service.GithubUserService;
@@ -102,7 +103,9 @@ public class GithubRepositoriesHandler {
 			@WebParam("login") String login) throws IOException {
 		//since the repository edit must need the login and name to generateId,so need these parameters
 		Repository repo = new Repository();
-		repo.setOwner(githubUserService.getGithubUser(user));
+		org.eclipse.egit.github.core.User owner = githubUserService.getGithubUser(user);
+		owner.setLogin(login);
+		repo.setOwner(owner);
 		repo.setName(name);
 		try{
 			return WebResponse.success(githubCommitService.getCommits(repo, user));
@@ -127,7 +130,7 @@ public class GithubRepositoriesHandler {
 		repo.setOwner(githubUserService.getGithubUser(user));
 		repo.setName(name);
 		try{
-			return WebResponse.success(githubCommitService.getCommit(repo, user,sha));
+			return WebResponse.success(githubCommitService.getCommit(repo, user, sha));
 		}catch(Exception e){
 			return WebResponse.fail(e.getMessage());
 		}
@@ -148,7 +151,7 @@ public class GithubRepositoriesHandler {
 		Repository repo = new Repository();
 		repo.setOwner(githubUserService.getGithubUser(user));
 		repo.setName(name);
-		return WebResponse.success(githubCommitService.compareCommits(repo,user,base,head));
+		return WebResponse.success(githubCommitService.compareCommits(repo, user, base, head));
 		}catch(Exception e){
 			return WebResponse.fail(e.getMessage());
 		}
@@ -178,7 +181,7 @@ public class GithubRepositoriesHandler {
 	 */
 	@WebGet("/github/getContents")
 	public WebResponse getContents(@WebUser User user,@WebParam("repo") String repo,@WebParam("path")String path) throws IOException{
-		return WebResponse.success(githubRepositoriesService.getContents(user, repo,path));
+		return WebResponse.success(githubRepositoriesService.getContents(user, repo, path));
 	}
 	
 	/**
@@ -213,7 +216,7 @@ public class GithubRepositoriesHandler {
 		repository.setOwner(githubUserService.getGithubUser(user));
 		repository.setName(repo);
 		System.out.println(repository.generateId());
-		return WebResponse.success(githubRepositoriesService.createDownload(user, repository,item));
+		return WebResponse.success(githubRepositoriesService.createDownload(user, repository, item));
 	}
 	
 	/**
@@ -229,7 +232,7 @@ public class GithubRepositoriesHandler {
 		Repository repository = new Repository();
 		repository.setOwner(githubUserService.getGithubUser(user));
 		repository.setName(repo);
-		githubRepositoriesService.deleteDownload(user, repository,Integer.parseInt(repoId));
+		githubRepositoriesService.deleteDownload(user, repository, Integer.parseInt(repoId));
 		return WebResponse.success();
 	}
 	
@@ -266,5 +269,101 @@ public class GithubRepositoriesHandler {
 		repository.setName(repo);
 		githubRepositoriesService.CreateFork(user, repository);
 		return WebResponse.success(githubRepositoriesService.getForks(user, repository));
+	}
+
+	/**
+	 * get Issues for a repository
+	 * @param user
+	 * @param name name of repository
+	 * @param login current github user login name
+	 * @return
+	 * @throws IOException
+	 */
+	@WebGet("/github/getIssues")
+	public WebResponse getIssues(@WebUser User user,@WebParam("name") String name,
+								  @WebParam("login") String login,@WebParam("state") String state) throws IOException {
+		Repository repo = new Repository();
+		org.eclipse.egit.github.core.User owner = githubUserService.getGithubUser(user);
+		owner.setLogin(login);
+		repo.setOwner(owner);
+		repo.setName(name);
+		try{
+			return WebResponse.success(githubRepositoriesService.getIssues(repo, user,state));
+		}catch(Exception e){
+			return WebResponse.fail(e.getMessage());
+		}
+	}
+
+	/**
+	 * get Issue for a repository
+	 * @param user
+	 * @param name name of repository
+	 * @param login current github user login name
+	 * @return
+	 * @throws IOException
+	 */
+	@WebGet("/github/getIssue")
+	public WebResponse getIssue(@WebUser User user,@WebParam("name") String name,
+								 @WebParam("login") String login,@WebParam("issueNumber") String issueNumber) throws IOException {
+		Repository repo = new Repository();
+		org.eclipse.egit.github.core.User owner = githubUserService.getGithubUser(user);
+		owner.setLogin(login);
+		repo.setOwner(owner);
+		repo.setName(name);
+		try{
+
+			return WebResponse.success(githubRepositoriesService.getIssue(repo, user, issueNumber));
+		}catch(Exception e){
+			return WebResponse.fail(e.getMessage());
+		}
+	}
+
+	/**
+	 * new Issue for a repository
+	 * @param user
+	 * @param name name of repository
+	 * @param login current github user login name
+	 * @param title title of issue
+	 * @param body body of issue
+	 * @return
+	 * @throws IOException
+	 */
+	@WebGet("/github/newIssue")
+	public WebResponse newIssue(@WebUser User user,@WebParam("name") String name,
+								@WebParam("login") String login,@WebParam("title") String title,
+								@WebParam("body") String body) throws IOException {
+		Repository repo = new Repository();
+		org.eclipse.egit.github.core.User owner = githubUserService.getGithubUser(user);
+		owner.setLogin(login);
+		repo.setOwner(owner);
+		repo.setName(name);
+		try{
+			Issue issue = new Issue();
+			issue.setTitle(title);
+			issue.setBody(body);
+			issue.setAssignee(owner);
+			return WebResponse.success(githubRepositoriesService.newIssue(repo, user, issue));
+		}catch(Exception e){
+			return WebResponse.fail(e.getMessage());
+		}
+	}
+
+	/**
+	* get Releases for a repository
+	* @param user
+	* @param name name of repository
+	* @param login current github user login name
+	* @return
+			* @throws IOException
+	*/
+	@WebGet("/github/getReleases")
+	public WebResponse getReleases(@WebUser User user,@WebParam("name") String name,
+								   @WebParam("login") String login) throws IOException {
+		Repository repo = new Repository();
+		org.eclipse.egit.github.core.User owner = githubUserService.getGithubUser(user);
+		owner.setLogin(login);
+		repo.setOwner(owner);
+		repo.setName(name);
+		return WebResponse.success(githubRepositoriesService.getReleases(repo, user));
 	}
 }

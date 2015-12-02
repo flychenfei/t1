@@ -111,9 +111,14 @@
                     var view = this;
                     if (view.opts.withPaging) {
                         var opts = view.opts.dataOpts;
-                        if (opts.pageIndex > 0) {
-                            opts.pageIndex--;
-                            refreshDataTable.call(view);
+                        if(view.prevPageToken){
+                        	opts.pageIndex = view.prevPageToken;
+	                        refreshDataTable.call(view);
+                        }else{
+                        	if (opts.pageIndex > 0) {
+	                            opts.pageIndex--;
+	                            refreshDataTable.call(view);
+	                        }
                         }
                     }
                 },
@@ -121,9 +126,14 @@
                     var view = this;
                     if (view.opts.withPaging) {
                         var opts = view.opts.dataOpts;
-                        if ((opts.pageIndex + 1 < view.numOfPages)||view.hasNext) {
-                            opts.pageIndex++;
-                            refreshDataTable.call(view);
+                        if(view.nextPageToken){
+                        	opts.pageIndex = view.nextPageToken;
+	                        refreshDataTable.call(view);
+                        }else{
+                        	if ((opts.pageIndex + 1 < view.numOfPages)||view.hasNext) {
+                            	opts.pageIndex++;
+	                            refreshDataTable.call(view);
+	                        }
                         }
                     }
 
@@ -235,7 +245,12 @@
                     }
                 }
             },
-            docEvents:{},
+            docEvents:{
+            	"DO_REFRESH_CURRENT_PAGE":function(){
+            		var view = this;
+            		refreshDataTable.call(view);
+            	}
+            },
             daoEvents:daoEvents
         });
 
@@ -243,7 +258,6 @@
             var view = this;
             var $e = view.$element;
             var opts = view.opts.dataOpts || {};
-            opts.withResultCount = true;
 
             view.defaultState = state || "closed";
             if (eraseTreeStates) {
@@ -251,7 +265,6 @@
             }
 
             var dataProvider =  view.dataProvider ? view.dataProvider : (view.dataType?brite.dao(view.dataType):null);
-            console.log(view.dataProvider);
             var dfd = view.opts.withDataListening ?
                     dataProvider.list(opts) :
                     view.gridData;
@@ -263,7 +276,7 @@
                 if (data.hasOwnProperty("numOfPages")) {
                     view.numOfPages = data.numOfPages;
                 } else {
-                    var resultCount = data.result_count || data.result.length;
+                    var resultCount = data.result_count || (typeof data.result == "undefined" ? 0 : data.result.length);
                     view.resultCount = resultCount;
                     view.numOfPages = Math.ceil(resultCount / opts.pageSize);
                 }
@@ -274,6 +287,8 @@
                 }
                 !view.numOfPages && (view.numOfPages = 0);
                 view.gridData = data.result;
+                view.prevPageToken = data.prevPageToken;
+                view.nextPageToken = data.nextPageToken;
                 var dataTableHtml = renderDataTable.call(view);
                 var $html = $(dataTableHtml);
                 $e.bEmpty().append($html);
@@ -293,7 +308,7 @@
             var htmlHeader = renderTableHead.call(view);
             $tableContent.find("thead").append(htmlHeader);
 
-            if (view.numOfPages == 0) {
+            if (!view.gridData || view.gridData.length == 0) {
                 htmlContent = renderEmptyTableBody.call(view);
                 $tableContent.find("tbody").append(htmlContent);
             } else {
@@ -449,14 +464,14 @@
                 html += "</td>";
             }
             if(view.opts.cmdEdit){
-                html += "<td data-cmd='" + view.opts.cmdEdit + "'><div class='icon-edit'/></td>"
+                html += "<td data-cmd='" + view.opts.cmdEdit + "'><div class='glyphicon glyphicon-edit'/></td>"
             }else if(view.opts.withCmdEdit) {
-                html += "<td data-cmd='cmdEdit'><div class='icon-edit'/></td>"
+                html += "<td data-cmd='cmdEdit'><div class='glyphicon glyphicon-edit'/></td>"
             }
             if(view.opts.cmdDelete){
-                html += "<td data-cmd='" + view.opts.cmdDelete + "'><div class='icon-remove'/></td>"
+                html += "<td data-cmd='" + view.opts.cmdDelete + "'><div class='glyphicon glyphicon-remove'/></td>"
             }else if(view.opts.withCmdDelete) {
-                html += "<td data-cmd='cmdDelete'><div class='icon-remove'/></td>"
+                html += "<td data-cmd='cmdDelete'><div class='glyphicon glyphicon-remove'/></td>"
             }
             html += "</tr>";
             return html;
@@ -465,9 +480,16 @@
         function renderPagingFooter() {
             var view = this;
             var opts = view.opts.dataOpts || {};
-            var pagination = new app.Pagination(view.resultCount,null,opts.pageSize);
-            pagination.go(opts.pageIndex+1);
-            return app.render("tmpl-DataTable-Foot",pagination.getPageInfo());
+            if(opts.withResultCount){
+	            var pagination = new app.Pagination(view.resultCount,null,opts.pageSize);
+	            pagination.go(opts.pageIndex+1);
+	            return app.render("tmpl-DataTable-Foot",pagination.getPageInfo());
+            }else{
+	            return app.render("tmpl-DataTable-Foot-without-pageNum",{
+	            	prevPageToken: view.prevPageToken,
+	            	nextPageToken: view.nextPageToken
+	            });
+            }
         }
 
         function renderEmptyTableBody() {
@@ -529,7 +551,8 @@
                 withPaging:true,
                 dataOpts:{
                     pageIndex:0,
-                    pageSize:10
+                    pageSize:10,
+                    withResultCount:true
                 }
             };
         }
